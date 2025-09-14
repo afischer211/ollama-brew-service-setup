@@ -30,14 +30,14 @@ natively supported by Homebrew services.
 
 ### Setup
 
-1.  **Clone this repository**:
+1. **Clone this repository**:
 
     ```bash
     git clone https://github.com/ntrlmt/ollama-brew-service-setup.git
     cd ollama-brew-service-setup
     ```
 
-2.  **Run the setup script**:
+2. **Run the setup script**:
 
     This script will create the service file and apply any environment
     variables.
@@ -80,19 +80,19 @@ changes to the service:
 
 ### 2. Service Management
 
--   **Start the service**:
+- **Start the service**:
 
     ```bash
     ./scripts/start-ollama-brew-service.sh
     ```
 
--   **Stop the service**:
+- **Stop the service**:
 
     ```bash
     ./scripts/stop-ollama-brew-service.sh
     ```
 
--   **Check service status**:
+- **Check service status**:
 
     ```bash
     brew services list
@@ -100,7 +100,7 @@ changes to the service:
 
     You should see `ollama` listed with a "started" status.
 
--   **View logs**:
+- **View logs**:
 
     ```bash
     ./scripts/log-ollama-brew-service.sh
