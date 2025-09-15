@@ -67,10 +67,12 @@ do
   fi
 
   # Remove optional surrounding quotes (single or double) from the value
-  value="${value#"}"
-  value="${value%"}"
-  value="${value#'}"
-  value="${value%'}"
+  if [[ ${value:0:1} == '"' && ${value: -1} == '"' ]]; then
+    value="${value:1:-1}"
+  fi
+  if [[ ${value:0:1} == "'" && ${value: -1} == "'" ]]; then
+    value="${value:1:-1}"
+  fi
 
   # Skip keys that have an empty value after processing
   if [[ -z "$value" ]]; then
@@ -83,8 +85,10 @@ do
     /usr/libexec/PlistBuddy -c "Delete :EnvironmentVariables:$key" "$PLIST"
   fi
   # Add the key-value pair to the EnvironmentVariables dictionary in the plist.
-  # The value is single-quoted to handle spaces. Note: This may not work correctly if the value itself contains a single quote.
-  /usr/libexec/PlistBuddy -c "Add :EnvironmentVariables:$key string '$value'" "$PLIST"
+  # The value is double-quoted to handle spaces. Escape backslashes then double quotes.
+  value_escaped="${value//\\/\\\\}"
+  value_escaped="${value_escaped//\"/\\\"}"
+  /usr/libexec/PlistBuddy -c "Add :EnvironmentVariables:$key string \"$value_escaped\"" "$PLIST"
 done < "$ENV_FILE"
 
 echo "Successfully updated environment variables in $PLIST"
