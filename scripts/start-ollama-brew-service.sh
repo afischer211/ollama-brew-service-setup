@@ -16,18 +16,44 @@ SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
 UPDATE_STATUS=$?
 
 if [ $UPDATE_STATUS -ne 0 ]; then
-  echo "Plist update failed. Ollama service will not be started."
-  exit 1
+    echo "Plist update failed. Ollama service will not be started."
+    exit 1
 fi
 
 PLIST="$HOME/Library/LaunchAgents/homebrew.mxcl.ollama.plist"
 
 if [ ! -f "$PLIST" ]; then
-  echo "$PLIST is not found."
-  exit 1
+    echo "Error: $PLIST not found."
+    exit 1
 fi
 
+brew services --file "$PLIST" start ollama
 
-brew services --file $PLIST start ollama
+# --- Check that the Ollama process is running ---
+echo "Waiting for Ollama process to start..."
+TIMEOUT=10
+ELAPSED=0
+until pgrep -x ollama &>/dev/null; do
+    if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+        echo "Error: Ollama process did not start within ${TIMEOUT}s."
+        exit 1
+    fi
+    sleep 1
+    ELAPSED=$((ELAPSED + 1))
+done
+echo "Ollama process is running."
+
+# --- Check client/server version consistency ---
+echo "Checking Ollama version..."
+VERSION_OUTPUT=$(ollama -v 2>&1)
+LINE_COUNT=$(echo "$VERSION_OUTPUT" | wc -l | xargs)
+
+if [ "$LINE_COUNT" -eq 1 ] && [[ "$VERSION_OUTPUT" == ollama\ version\ is\ * ]]; then
+    echo "$VERSION_OUTPUT"
+else
+    echo "Warning: unexpected output from 'ollama -v' — possible client/server version mismatch:"
+    echo "$VERSION_OUTPUT"
+    exit 1
+fi
 
 exit 0
