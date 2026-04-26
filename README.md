@@ -80,8 +80,10 @@ apply the changes to the service.
 ```
 
 Applies the current `.env` to the plist, starts the service, waits for the
-Ollama process to appear, and checks `ollama -v` for client/server version
-mismatches.
+Ollama process to appear, and then retries `ollama -v` (up to 10 s, with
+stderr suppressed) until the server is ready and responds with a clean version
+string. If the server does not become ready in time, a warning is printed with
+the raw output and the script exits with a non-zero status.
 
 ### Stop
 

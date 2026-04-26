@@ -45,15 +45,21 @@ echo "Ollama process is running."
 
 # --- Check client/server version consistency ---
 echo "Checking Ollama version..."
-VERSION_OUTPUT=$(ollama -v 2>&1)
-LINE_COUNT=$(echo "$VERSION_OUTPUT" | wc -l | xargs)
-
-if [ "$LINE_COUNT" -eq 1 ] && [[ "$VERSION_OUTPUT" == ollama\ version\ is\ * ]]; then
-    echo "$VERSION_OUTPUT"
-else
-    echo "Warning: unexpected output from 'ollama -v' — possible client/server version mismatch:"
-    echo "$VERSION_OUTPUT"
-    exit 1
-fi
+VERSION_TIMEOUT=10
+VERSION_ELAPSED=0
+VERSION_OUTPUT=""
+until VERSION_OUTPUT=$(ollama -v 2>/dev/null) && \
+      [ "$(echo "$VERSION_OUTPUT" | wc -l | xargs)" -eq 1 ] && \
+      [[ "$VERSION_OUTPUT" == ollama\ version\ is\ * ]]; do
+    if [ "$VERSION_ELAPSED" -ge "$VERSION_TIMEOUT" ]; then
+        VERSION_OUTPUT=$(ollama -v 2>&1)
+        echo "Warning: unexpected output from 'ollama -v' — possible client/server version mismatch:"
+        echo "$VERSION_OUTPUT"
+        exit 1
+    fi
+    sleep 1
+    VERSION_ELAPSED=$((VERSION_ELAPSED + 1))
+done
+echo "$VERSION_OUTPUT"
 
 exit 0
