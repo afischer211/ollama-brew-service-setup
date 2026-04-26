@@ -2,7 +2,14 @@
 
 echo "Update plist and start Ollama service with brew."
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Resolve symlinks so the update script is found even when called via a softlink
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT_PATH" ]; do
+    SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
+    SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+    [[ "$SCRIPT_PATH" != /* ]] && SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
 
 # Call the plist update script with absolute path
 "$SCRIPT_DIR/update-ollama-brew-plist-env-vars.sh"

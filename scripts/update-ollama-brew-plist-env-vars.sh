@@ -1,19 +1,36 @@
 #!/bin/bash
 
 # --- Configuration ---
-# Get the absolute path of the directory where this script is located
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-# Assuming the script is in a 'scripts' directory, the project root is one level up
+# Resolve symlinks so the script works correctly when called via a softlink
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT_PATH" ]; do
+    SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
+    SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+    [[ "$SCRIPT_PATH" != /* ]] && SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Path to the source plist file within the project
-SOURCE_PLIST="$PROJECT_ROOT/resources/homebrew.mxcl.ollama.plist"
+OLLAMA_HOME="$HOME/.ollama"
+
+# Source plist template: prefer $OLLAMA_HOME/resources, fall back to project resources
+if [ -f "$OLLAMA_HOME/resources/homebrew.mxcl.ollama.plist" ]; then
+    SOURCE_PLIST="$OLLAMA_HOME/resources/homebrew.mxcl.ollama.plist"
+else
+    SOURCE_PLIST="$PROJECT_ROOT/resources/homebrew.mxcl.ollama.plist"
+fi
+
 # Destination path for the plist file in the user's LaunchAgents directory
 PLIST="$HOME/Library/LaunchAgents/homebrew.mxcl.ollama.plist"
 
-# Paths to environment files in the project root
-ENV_FILE="$PROJECT_ROOT/.env"
-ENV_EXAMPLE_FILE="$PROJECT_ROOT/.env.example"
+# .env location: prefer $OLLAMA_HOME, fall back to project root
+if [ -f "$OLLAMA_HOME/.env" ]; then
+    ENV_FILE="$OLLAMA_HOME/.env"
+    ENV_EXAMPLE_FILE="$OLLAMA_HOME/.env.example"
+else
+    ENV_FILE="$PROJECT_ROOT/.env"
+    ENV_EXAMPLE_FILE="$PROJECT_ROOT/.env.example"
+fi
 
 
 # --- Script Logic ---
