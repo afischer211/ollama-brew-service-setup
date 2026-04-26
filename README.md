@@ -63,15 +63,10 @@ example file and edit it to your needs:
 cp ~/.ollama/.env.example ~/.ollama/.env
 ```
 
-Example settings:
-
-```dotenv
-# Make Ollama accessible on your local network
-OLLAMA_HOST=0.0.0.0
-
-# Store models on an external drive
-OLLAMA_MODELS=/Volumes/External/ollama_models
-```
+Every variable in `.env.example` includes a description and its default value.
+Variables that benefit from specific hardware — in particular Apple Silicon
+M1 Pro/Max with 32 GB+ unified memory — are annotated with a `M1 Pro/Max 32GB+:`
+note directly in the file.
 
 After editing `.env`, run the start script (or the update script alone) to
 apply the changes to the service.
